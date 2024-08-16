@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.esri.arcgisruntime.toolkit.ar.ArcGISArView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/arView"
+            app:renderVideoFeed="true"/>
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bottomSheetContainer"
+            style="?attr/bottomSheetStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            android:clickable="true"
+            android:focusable="true"
+            app:behavior_draggable="true"
+            app:behavior_fitToContents="false"
+            app:behavior_halfExpandedRatio="0.5"
+            app:behavior_hideable="true"
+            app:behavior_peekHeight="80dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="50dp"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+            <fragment
+                android:id="@+id/bottomSheetPopupFragment"
+                android:name="com.esriindonesia.augis.util.PopupFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:animateLayoutChanges="true" />
+        </androidx.cardview.widget.CardView>
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+        <RelativeLayout
+            android:layout_gravity="bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <include
+                android:layout_above="@id/btnCalibrate"
+                android:id="@+id/layoutCalibrate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                layout="@layout/layout_calibration_controls"
+                android:visibility="gone"/>
+            <Button
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="16dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/btnCalibrate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Calibrate"
+                android:textAllCaps="false" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/btnEdit"
+            android:layout_gravity="end"
+            android:layout_margin="8dp"
+            android:background="@drawable/bg_fill_round_white_8"
+            android:padding="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/ivEdit"
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_edit"/>
+            <TextView
+                android:layout_marginStart="4dp"
+                android:layout_toEndOf="@id/ivEdit"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:id="@+id/tvEdit"
+                android:textColor="@color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Status"/>
+        </RelativeLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

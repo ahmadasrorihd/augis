@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.esri.arcgisruntime.mapping.view.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    <Button
+        android:layout_margin="16dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/bg_fill_round_white_8"
+        android:layout_marginTop="24dp"
+        android:textColor="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start AR View"
+        android:textAllCaps="false"
+        android:id="@+id/btnStartARView"/>
+</RelativeLayout>
