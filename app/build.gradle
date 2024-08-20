@@ -15,6 +15,9 @@ android {
         versionCode 1
         versionName "1.0"
 
+        buildConfigField("String", "API_KEY", '"AAPTxy8BH1VEsoebNVZXo8HurOM-YW4eZr_SYZjL_q3SzSQ-8Pvq-TChtn22A00N-eTKYA1sObt-OYaWnV_gPgmRnt_cDGwP_EvmxcyB6QQVyUrlgqq7KH5o8qISG4LInPRyYYnaIwRbuXkm34LyeCUCfPsCu3fo80wAuvt3cyhToGzxPJJ_WnFl-Ny8RzCx4mITueVKZvQpik_8Nc3ESzowOvKAJn5CodpVKHEgzjwfHpnf4K5hyy69WvMpg_-4m5fOAT1_fuP4m3Q9"')
+        buildConfigField("String", "LICENSE", '"runtimelite,1000,rud2232708308,none,C6JC7XLS1MH0F5KHT033"')
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -35,6 +38,7 @@ android {
     buildFeatures {
         viewBinding true
         dataBinding true
+        buildConfig = true
     }
     kotlinOptions {
         jvmTarget = '17'

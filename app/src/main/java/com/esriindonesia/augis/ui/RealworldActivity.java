@@ -30,6 +30,7 @@ import com.esri.arcgisruntime.data.ServiceFeatureTable;
 import com.esri.arcgisruntime.geometry.Envelope;
 import com.esri.arcgisruntime.layers.ArcGISSceneLayer;
 import com.esri.arcgisruntime.layers.FeatureLayer;
+import com.esri.arcgisruntime.layers.LayerContent;
 import com.esri.arcgisruntime.loadable.LoadStatus;
 import com.esri.arcgisruntime.mapping.ArcGISScene;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
@@ -43,6 +44,7 @@ import com.esri.arcgisruntime.portal.PortalItem;
 import com.esri.arcgisruntime.toolkit.ar.ArcGISArView;
 import com.esri.arcgisruntime.toolkit.control.JoystickSeekBar;
 import com.esri.arcgisruntime.toolkit.popup.PopupViewModel;
+import com.esriindonesia.augis.BuildConfig;
 import com.esriindonesia.augis.R;
 import com.esriindonesia.augis.databinding.ActivityMapsBinding;
 import com.esriindonesia.augis.databinding.ActivityRealworldBinding;
@@ -129,9 +131,8 @@ public class RealworldActivity extends AppCompatActivity {
 //        y = 106.80938757443522;
     }
     private void setKey() {
-        ArcGISRuntimeEnvironment.setApiKey("AAPTxy8BH1VEsoebNVZXo8HurOM-YW4eZr_SYZjL_q3SzSQ-8Pvq-TChtn22A00N-eTKYA1sObt-OYaWnV_gPgmRnt_cDGwP_EvmxcyB6QQVyUrlgqq7KH5o8qISG4LInPRyYYnaIwRbuXkm34LyeCUCfPsCu3fo80wAuvt3cyhToGzxPJJ_WnFl-Ny8RzCx4mITueVKZvQpik_8Nc3ESzowOvKAJn5CodpVKHEgzjwfHpnf4K5hyy69WvMpg_-4m5fOAT1_fuP4m3Q9");
-
-        ArcGISRuntimeEnvironment.setLicense("runtimelite,1000,rud2232708308,none,C6JC7XLS1MH0F5KHT033");
+        ArcGISRuntimeEnvironment.setApiKey(BuildConfig.API_KEY);
+        ArcGISRuntimeEnvironment.setLicense(BuildConfig.LICENSE);
     }
 
     private void initListener() {
@@ -183,21 +184,16 @@ public class RealworldActivity extends AppCompatActivity {
     }
 
     private void displayARScene() {
-        sceneLayerA = new ArcGISSceneLayer("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/AssetScene_2_WSL1/SceneServer"); // layer url
+        scene = new ArcGISScene(BasemapStyle.OSM_STREETS);
+        sceneLayerA = new ArcGISSceneLayer("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/CombineScene_WSL1/SceneServer");
         scene.getOperationalLayers().addAll(Arrays.asList(sceneLayerA));
         binding.arView.getSceneView().setScene(scene);
+        scene.getBaseSurface().setNavigationConstraint(NavigationConstraint.NONE);
+
         scene.addDoneLoadingListener(() -> {
             if (scene.getLoadStatus() == LoadStatus.LOADED) {
-                Envelope envelope = featureLayer.getFullExtent();
-
-                // x and y from intent
-                //Camera camera = new Camera(y, x, 2, binding.arView.getOriginCamera().getHeading(), 90.0, binding.arView.getOriginCamera().getRoll());
-
-                // x and y from service
-                Camera camera = new Camera(envelope.getCenter().getY(), envelope.getCenter().getX(), 2, binding.arView.getOriginCamera().getHeading(), 90.0, binding.arView.getOriginCamera().getRoll());
-
-                binding.arView.setOriginCamera(camera);
-
+                Envelope envelope = sceneLayerA.getFullExtent();
+                updateCamera(envelope);
                 binding.arView.getSceneView().setOnTouchListener(new DefaultSceneViewOnTouchListener(binding.arView.getSceneView()) {
                     @Override
                     public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
@@ -210,7 +206,7 @@ public class RealworldActivity extends AppCompatActivity {
                         );
                         // identify clicked feature
                         ListenableFuture<IdentifyLayerResult> identify = binding.arView.getSceneView()
-                                .identifyLayerAsync(sceneLayerA, screenPoint, 10.0, true, 1);
+                                .identifyLayerAsync(sceneLayerA, screenPoint, 10, false, 1);
                         identify.addDoneListener(() -> {
                             try {
                                 // get the identified result and check that it is a feature
@@ -252,7 +248,7 @@ public class RealworldActivity extends AppCompatActivity {
     private void displayARFeature() {
         scene = new ArcGISScene(BasemapStyle.OSM_STREETS);
         scene.getOperationalLayers().add(new FeatureLayer(
-                new ServiceFeatureTable("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/persil_capital_place/FeatureServer/0")
+                new ServiceFeatureTable("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/CombineScene_WFL1/FeatureServer/0")
         ));
         binding.arView.getSceneView().setScene(scene);
         scene.getBaseSurface().setNavigationConstraint(NavigationConstraint.NONE);
@@ -262,57 +258,38 @@ public class RealworldActivity extends AppCompatActivity {
         featureLayer.addDoneLoadingListener(() -> {
             if (featureLayer.getLoadStatus() == LoadStatus.LOADED) {
                 Envelope envelope = featureLayer.getFullExtent();
-
-                // x and y from intent
-                //Camera camera = new Camera(y, x, 2, binding.arView.getOriginCamera().getHeading(), 90.0, binding.arView.getOriginCamera().getRoll());
-
-                // x and y from service
-                Camera camera = new Camera(envelope.getCenter().getY(), envelope.getCenter().getX(), 2, binding.arView.getOriginCamera().getHeading(), 90.0, binding.arView.getOriginCamera().getRoll());
-
-                binding.arView.setOriginCamera(camera);
+                updateCamera(envelope);
                 binding.arView.getSceneView().setOnTouchListener(new DefaultSceneViewOnTouchListener(binding.arView.getSceneView()) {
 
                     @Override public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
                         binding.progressBar.setVisibility(View.VISIBLE);
-                        // clear any previous selection
                         featureLayer = (FeatureLayer) scene.getOperationalLayers().get(0);
                         featureLayer.clearSelection();
-                        featureLayer.clearSelection();
-//                        sceneLayerSample2.clearSelection();
 
                         Point screenPoint = new Point(Math.round(motionEvent.getX()),
                                 Math.round(motionEvent.getY()));
-                        // identify clicked feature
                         ListenableFuture<IdentifyLayerResult> identify = binding.arView.getSceneView()
-                                .identifyLayerAsync(featureLayer, screenPoint, 10, false, 1);
+                                .identifyLayerAsync(featureLayer, screenPoint, 12.0, false, 1);
                         identify.addDoneListener(() -> {
                             try {
-                                // get the identified result and check that it is a feature
-                                IdentifyLayerResult result = identify.get();
-                                List<GeoElement> geoElements = result.getElements();
-                                if (!geoElements.isEmpty()) {
-                                    Log.d(TAG, "geoelement not empty");
-                                    popupViewModel.setPopup(result.getPopups().get(0));
-                                    GeoElement geoElement = geoElements.get(0);
-//                                    Object IDs = geoElements.get(0).getAttributes().get("OBJECTID");
-//                                    selectedIDs = "IDs.toString()";
-                                    binding.btnEdit.setOnClickListener(view -> {
-                                        Intent intent = new Intent(RealworldActivity.this, EditAttributeActivity.class);
-                                        intent.putExtra("", "");
-                                        startActivityForResultLauncher.launch(intent);
-                                    });
-                                    if (geoElement instanceof Feature) {
-                                        Object ads = geoElements.get(0).getAttributes().get("OBJECTID");
-                                        Toast.makeText(RealworldActivity.this, ads.toString(), Toast.LENGTH_SHORT).show();
-                                        featureLayer.selectFeature((Feature) geoElement);
-                                        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                                IdentifyLayerResult identifyLayerResult = identify.get();
+
+                                if (!identifyLayerResult.getPopups().isEmpty()) {
+                                    popupViewModel.setPopup(identifyLayerResult.getPopups().get(0));
+
+                                    LayerContent layerContent = identifyLayerResult.getLayerContent();
+                                    FeatureLayer featureLayer = layerContent instanceof FeatureLayer ? (FeatureLayer) layerContent : null;
+
+                                    if (featureLayer != null) {
+                                        Feature feature = (Feature) identifyLayerResult.getPopups().get(0).getGeoElement();
+                                        featureLayer.selectFeature(feature);
                                     }
+                                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                                 }
                                 binding.progressBar.setVisibility(View.GONE);
-                            } catch (InterruptedException | ExecutionException e) {
-                                String error = "Error while identifying layer result: " + e.getMessage();
-                                Log.e(TAG, error);
-                                Toast.makeText(RealworldActivity.this, error, Toast.LENGTH_LONG).show();
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
                                 binding.progressBar.setVisibility(View.GONE);
                             }
                         });
@@ -330,6 +307,16 @@ public class RealworldActivity extends AppCompatActivity {
 
     private void updateAttribute() {
 
+    }
+
+    private void updateCamera(Envelope envelope) {
+        // x and y from intent
+        Camera camera = new Camera(y, x, 2, binding.arView.getOriginCamera().getHeading(), 90.0, binding.arView.getOriginCamera().getRoll());
+
+        // x and y from service
+//        Camera camera = new Camera(envelope.getCenter().getY(), envelope.getCenter().getX(), 2, binding.arView.getOriginCamera().getHeading(), 90.0, binding.arView.getOriginCamera().getRoll());
+
+        binding.arView.setOriginCamera(camera);
     }
 
     private void requestCameraPermission() {

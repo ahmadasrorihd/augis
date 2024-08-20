@@ -1,23 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.esri.arcgisruntime.mapping.view.MapView
-        android:id="@+id/mapView"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    <Button
-        android:layout_margin="16dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/bg_fill_round_white_8"
-        android:layout_marginTop="24dp"
-        android:textColor="@color/white"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Start AR View"
-        android:textAllCaps="false"
-        android:id="@+id/btnStartARView"/>
-</RelativeLayout>
+        android:layout_height="match_parent">
+
+        <com.esri.arcgisruntime.mapping.view.MapView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/mapView"
+            app:renderVideoFeed="true"/>
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bottomSheetContainer"
+            style="?attr/bottomSheetStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            android:clickable="true"
+            android:focusable="true"
+            app:behavior_draggable="true"
+            app:behavior_fitToContents="false"
+            app:behavior_halfExpandedRatio="0.5"
+            app:behavior_hideable="true"
+            app:behavior_peekHeight="80dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="50dp"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+            <fragment
+                android:id="@+id/bottomSheetPopupFragment"
+                android:name="com.esriindonesia.augis.util.PopupFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:animateLayoutChanges="true" />
+        </androidx.cardview.widget.CardView>
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+        <RelativeLayout
+            android:layout_gravity="bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="16dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/btnStartAR"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start AR View"
+                android:textAllCaps="false" />
+        </RelativeLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

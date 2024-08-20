@@ -4,10 +4,13 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -15,24 +18,44 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.concurrent.ListenableFuture;
+import com.esri.arcgisruntime.data.Feature;
+import com.esri.arcgisruntime.data.ServiceFeatureTable;
+import com.esri.arcgisruntime.geometry.GeometryType;
+import com.esri.arcgisruntime.layers.FeatureLayer;
+import com.esri.arcgisruntime.layers.LayerContent;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
+
 import com.esri.arcgisruntime.mapping.Viewpoint;
+import com.esri.arcgisruntime.mapping.popup.Popup;
+import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
+import com.esri.arcgisruntime.mapping.view.DefaultSceneViewOnTouchListener;
+import com.esri.arcgisruntime.mapping.view.IdentifyLayerResult;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
+import com.esri.arcgisruntime.toolkit.popup.PopupViewModel;
+import com.esriindonesia.augis.BuildConfig;
 import com.esriindonesia.augis.R;
 import com.esriindonesia.augis.databinding.ActivityMapsBinding;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class MapsActivity extends AppCompatActivity {
     private ActivityMapsBinding binding;
-
+    private static final String TAG = MapsActivity.class.getSimpleName();
     private LocationDisplay locationDisplay;
     private LocationManager manager;
-
+    private PopupViewModel popupViewModel;
+    private BottomSheetBehavior<CardView> bottomSheetBehavior;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,18 +68,43 @@ public class MapsActivity extends AppCompatActivity {
 
     private void initView() {
         setKey();
+        initiateVariable();
         displayMap();
     }
 
-    private void setKey() {
-        ArcGISRuntimeEnvironment.setApiKey("AAPTxy8BH1VEsoebNVZXo8HurOM-YW4eZr_SYZjL_q3SzSQ-8Pvq-TChtn22A00N-eTKYA1sObt-OYaWnV_gPgmRnt_cDGwP_EvmxcyB6QQVyUrlgqq7KH5o8qISG4LInPRyYYnaIwRbuXkm34LyeCUCfPsCu3fo80wAuvt3cyhToGzxPJJ_WnFl-Ny8RzCx4mITueVKZvQpik_8Nc3ESzowOvKAJn5CodpVKHEgzjwfHpnf4K5hyy69WvMpg_-4m5fOAT1_fuP4m3Q9");
+    private FeatureLayer getFeatureLayer() {
+        if (binding.mapView.getMap().getOperationalLayers() != null) {
+            for (Object layer : binding.mapView.getMap().getOperationalLayers()) {
+                if (layer instanceof FeatureLayer featureLayer) {
+                    if (featureLayer.getFeatureTable().getGeometryType() == GeometryType.POINT
+                            && featureLayer.isVisible()
+                            && featureLayer.isPopupEnabled()
+                            && featureLayer.getPopupDefinition() != null) {
+                        return featureLayer;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
-        ArcGISRuntimeEnvironment.setLicense("runtimelite,1000,rud2232708308,none,C6JC7XLS1MH0F5KHT033");
+    private void initiateVariable() {
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheetContainer);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        popupViewModel = ViewModelProviders.of(this).get(PopupViewModel.class);
+    }
+
+    private void setKey() {
+        ArcGISRuntimeEnvironment.setApiKey(BuildConfig.API_KEY);
+        ArcGISRuntimeEnvironment.setLicense(BuildConfig.LICENSE);
     }
 
     private void displayMap() {
         manager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        binding.mapView.setMap(new ArcGISMap(BasemapStyle.OSM_STREETS));
+        binding.mapView.setMap(new ArcGISMap(BasemapStyle.ARCGIS_TOPOGRAPHIC));
+        binding.mapView.getMap().getOperationalLayers().add(new FeatureLayer(
+                new ServiceFeatureTable("https://sampleserver6.arcgisonline.com/arcgis/rest/services/SF311/FeatureServer/0")
+        ));
         binding.mapView.setViewpoint(new Viewpoint(34.056295, -117.195800, 5000.0));
 
         locationDisplay = binding.mapView.getLocationDisplay();
@@ -69,6 +117,66 @@ public class MapsActivity extends AppCompatActivity {
             }
         });
         if (!locationDisplay.isStarted()) locationDisplay.startAsync();
+        initListener();
+
+    }
+
+    private void initListener() {
+        binding.mapView.setOnTouchListener(new DefaultMapViewOnTouchListener(this, binding.mapView) {
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent event) {
+                // set the progressBar visibility
+                binding.progressBar.setVisibility(View.VISIBLE);
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                Point screenPoint = new Point(Math.round(event.getX()), Math.round(event.getY()));
+                // setup identifiable layer at the given screen point.
+                identifyLayer(screenPoint);
+                return true;
+            }
+        });
+    }
+
+    private void identifyLayer(Point screenPoint) {
+
+        FeatureLayer featureLayer = getFeatureLayer();
+        if (featureLayer != null) {
+            // clear the selected features from the feature layer
+            resetIdentifyResult();
+
+            binding.mapView.identifyLayerAsync(featureLayer, screenPoint, 12.0, true)
+                    .addDoneListener(() -> {
+                        try {
+                            IdentifyLayerResult identifyLayerResult =
+                                    binding.mapView.identifyLayerAsync(featureLayer, screenPoint, 12.0, true).get();
+
+                            List<Popup> popups = identifyLayerResult.getPopups();
+                            if (!popups.isEmpty()) {
+                                popupViewModel.setPopup(popups.get(0));
+                                FeatureLayer identifiedFeatureLayer = identifyLayerResult.getLayerContent() instanceof FeatureLayer
+                                        ? (FeatureLayer) identifyLayerResult.getLayerContent() : null;
+                                if (identifiedFeatureLayer != null) {
+                                    identifiedFeatureLayer.selectFeature((Feature) popups.get(0).getGeoElement());
+                                }
+                                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                            }
+                        } catch (ExecutionException | InterruptedException e) {
+                            String error = "Error identifying results " + e.getMessage();
+                            Log.e(TAG, error);
+                            Toast.makeText(MapsActivity.this, error, Toast.LENGTH_SHORT).show();
+                        }
+
+                        // set the progressBar visibility
+                        binding.progressBar.setVisibility(View.GONE);
+                    });
+        }
+    }
+
+    private void resetIdentifyResult() {
+        FeatureLayer featureLayer = getFeatureLayer();
+        if (featureLayer != null) {
+            featureLayer.clearSelection();
+        }
+        popupViewModel.clearPopup();
     }
 
     private void checkGPS() {
@@ -104,7 +212,7 @@ public class MapsActivity extends AppCompatActivity {
         locationDisplay.addLocationChangedListener(it -> {
             double x = it.getLocation().getPosition().getX();
             double y = it.getLocation().getPosition().getY();
-            binding.btnStartARView.setOnClickListener(view -> {
+            binding.btnStartAR.setOnClickListener(view -> {
                 Intent i = new Intent(this, RealworldActivity.class);
                 i.putExtra("X", x);
                 i.putExtra("Y", y);
