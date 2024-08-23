@@ -17,6 +17,9 @@
         android:theme="@style/Theme.AuGIS"
         tools:targetApi="31">
         <activity
+            android:name=".ui.SampleSceneView"
+            android:exported="false" />
+        <activity
             android:name=".ui.EditAttributeActivity"
             android:exported="false" />
         <activity

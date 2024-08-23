@@ -39,6 +39,8 @@ import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.DefaultSceneViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.IdentifyLayerResult;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
+import com.esri.arcgisruntime.portal.Portal;
+import com.esri.arcgisruntime.portal.PortalItem;
 import com.esri.arcgisruntime.toolkit.popup.PopupViewModel;
 import com.esriindonesia.augis.BuildConfig;
 import com.esriindonesia.augis.R;
@@ -76,8 +78,7 @@ public class MapsActivity extends AppCompatActivity {
         if (binding.mapView.getMap().getOperationalLayers() != null) {
             for (Object layer : binding.mapView.getMap().getOperationalLayers()) {
                 if (layer instanceof FeatureLayer featureLayer) {
-                    if (featureLayer.getFeatureTable().getGeometryType() == GeometryType.POINT
-                            && featureLayer.isVisible()
+                    if (featureLayer.isVisible()
                             && featureLayer.isPopupEnabled()
                             && featureLayer.getPopupDefinition() != null) {
                         return featureLayer;
@@ -101,12 +102,10 @@ public class MapsActivity extends AppCompatActivity {
 
     private void displayMap() {
         manager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        binding.mapView.setMap(new ArcGISMap(BasemapStyle.ARCGIS_TOPOGRAPHIC));
-        binding.mapView.getMap().getOperationalLayers().add(new FeatureLayer(
-                new ServiceFeatureTable("https://sampleserver6.arcgisonline.com/arcgis/rest/services/SF311/FeatureServer/0")
-        ));
-        binding.mapView.setViewpoint(new Viewpoint(34.056295, -117.195800, 5000.0));
-
+        Portal portal = new Portal("https://tiger.maps.arcgis.com/");
+        PortalItem portalItem = new PortalItem(portal, "5dac6a5e6fdb4a3fa8850f9fa7a773c3");
+        ArcGISMap map = new ArcGISMap(portalItem);
+        binding.mapView.setMap(map);
         locationDisplay = binding.mapView.getLocationDisplay();
         locationDisplay.addDataSourceStatusChangedListener(it -> {
             if (!it.isStarted() && it.getError() != null) {
