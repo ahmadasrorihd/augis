@@ -39,6 +39,8 @@ import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.DefaultSceneViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.IdentifyLayerResult;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
+import com.esri.arcgisruntime.portal.Portal;
+import com.esri.arcgisruntime.portal.PortalItem;
 import com.esri.arcgisruntime.toolkit.popup.PopupViewModel;
 import com.esriindonesia.augis.BuildConfig;
 import com.esriindonesia.augis.R;
@@ -70,16 +72,27 @@ public class MapsActivity extends AppCompatActivity {
         setKey();
         initiateVariable();
         displayMap();
+        binding.btnStartPopup.setOnClickListener(view -> {
+            Intent i = new Intent(this, SamplePopupActivity.class);
+            startActivity(i);
+        });
+        binding.btnStartMap.setOnClickListener(view -> {
+            Intent i = new Intent(this, SampleMapsActivity.class);
+            startActivity(i);
+        });
+        binding.btnStartScene.setOnClickListener(view -> {
+            Intent i = new Intent(this, SampleSceneActivity.class);
+            startActivity(i);
+        });
     }
 
     private FeatureLayer getFeatureLayer() {
         if (binding.mapView.getMap().getOperationalLayers() != null) {
             for (Object layer : binding.mapView.getMap().getOperationalLayers()) {
-                if (layer instanceof FeatureLayer featureLayer) {
-                    if (featureLayer.getFeatureTable().getGeometryType() == GeometryType.POINT
-                            && featureLayer.isVisible()
-                            && featureLayer.isPopupEnabled()
-                            && featureLayer.getPopupDefinition() != null) {
+                if (layer instanceof FeatureLayer) {
+                    FeatureLayer featureLayer = (FeatureLayer) layer;
+                    if (featureLayer.isVisible()
+                            && featureLayer.isPopupEnabled()) {
                         return featureLayer;
                     }
                 }

@@ -46,6 +46,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <Button
+                android:layout_above="@id/btnStartScene"
+                android:layout_marginBottom="16dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/btnStartMap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start Map"
+                android:textAllCaps="false" />
+            <Button
+                android:layout_above="@id/btnStartPopup"
+                android:layout_marginBottom="16dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/btnStartScene"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start Scene"
+                android:textAllCaps="false" />
+            <Button
+                android:layout_above="@id/btnStartAR"
+                android:layout_marginBottom="16dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/btnStartPopup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start Popup"
+                android:textAllCaps="false" />
+            <Button
                 android:layout_alignParentBottom="true"
                 android:layout_marginBottom="16dp"
                 android:layout_centerHorizontal="true"
