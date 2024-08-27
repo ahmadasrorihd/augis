@@ -22,32 +22,24 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProviders;
-
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
-import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.data.Feature;
 import com.esri.arcgisruntime.data.ServiceFeatureTable;
-import com.esri.arcgisruntime.geometry.GeometryType;
+import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.layers.FeatureLayer;
-import com.esri.arcgisruntime.layers.LayerContent;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
-
 import com.esri.arcgisruntime.mapping.Viewpoint;
 import com.esri.arcgisruntime.mapping.popup.Popup;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
-import com.esri.arcgisruntime.mapping.view.DefaultSceneViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.IdentifyLayerResult;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
-import com.esri.arcgisruntime.portal.Portal;
-import com.esri.arcgisruntime.portal.PortalItem;
 import com.esri.arcgisruntime.toolkit.popup.PopupViewModel;
 import com.esriindonesia.augis.BuildConfig;
 import com.esriindonesia.augis.R;
 import com.esriindonesia.augis.databinding.ActivityMapsBinding;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -58,7 +50,7 @@ public class MapsActivity extends AppCompatActivity {
     private LocationManager manager;
     private PopupViewModel popupViewModel;
     private BottomSheetBehavior<CardView> bottomSheetBehavior;
-
+    private static final int SCALE = 5000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,18 +64,18 @@ public class MapsActivity extends AppCompatActivity {
         setKey();
         initiateVariable();
         displayMap();
-        binding.btnStartPopup.setOnClickListener(view -> {
-            Intent i = new Intent(this, SamplePopupActivity.class);
-            startActivity(i);
-        });
-        binding.btnStartMap.setOnClickListener(view -> {
-            Intent i = new Intent(this, SampleMapsActivity.class);
-            startActivity(i);
-        });
-        binding.btnStartScene.setOnClickListener(view -> {
-            Intent i = new Intent(this, SampleSceneActivity.class);
-            startActivity(i);
-        });
+//        binding.btnStartPopup.setOnClickListener(view -> {
+//            Intent i = new Intent(this, SamplePopupActivity.class);
+//            startActivity(i);
+//        });
+//        binding.btnStartMap.setOnClickListener(view -> {
+//            Intent i = new Intent(this, SampleMapsActivity.class);
+//            startActivity(i);
+//        });
+//        binding.btnStartScene.setOnClickListener(view -> {
+//            Intent i = new Intent(this, SampleSceneActivity.class);
+//            startActivity(i);
+//        });
     }
 
     private FeatureLayer getFeatureLayer() {
@@ -118,7 +110,13 @@ public class MapsActivity extends AppCompatActivity {
         binding.mapView.getMap().getOperationalLayers().add(new FeatureLayer(
                 new ServiceFeatureTable("https://sampleserver6.arcgisonline.com/arcgis/rest/services/SF311/FeatureServer/0")
         ));
-        binding.mapView.setViewpoint(new Viewpoint(34.056295, -117.195800, 5000.0));
+        binding.btnZoomLayer.setOnClickListener(v -> {
+            com.esri.arcgisruntime.geometry.Point londonPoint = new com.esri.arcgisruntime.geometry.Point(binding.mapView.getMap().getOperationalLayers().get(0).getFullExtent().getYMax(), binding.mapView.getMap().getOperationalLayers().get(0).getFullExtent().getXMax(), SpatialReferences.getWgs84());
+            // create the viewpoint with the London point and scale
+            Viewpoint viewpoint = new Viewpoint(londonPoint, SCALE);
+            // set the map view's viewpoint to London with a seven second animation duration
+            binding.mapView.setViewpointAsync(viewpoint, 7f);
+        });
 
         locationDisplay = binding.mapView.getLocationDisplay();
         locationDisplay.addDataSourceStatusChangedListener(it -> {

@@ -45,42 +45,37 @@
             android:layout_gravity="bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <Button
-                android:layout_above="@id/btnStartScene"
+            <LinearLayout
                 android:layout_marginBottom="16dp"
-                android:layout_centerHorizontal="true"
-                android:id="@+id/btnStartMap"
+                android:layout_centerInParent="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Start Map"
-                android:textAllCaps="false" />
-            <Button
-                android:layout_above="@id/btnStartPopup"
-                android:layout_marginBottom="16dp"
-                android:layout_centerHorizontal="true"
-                android:id="@+id/btnStartScene"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Start Scene"
-                android:textAllCaps="false" />
-            <Button
-                android:layout_above="@id/btnStartAR"
-                android:layout_marginBottom="16dp"
-                android:layout_centerHorizontal="true"
-                android:id="@+id/btnStartPopup"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Start Popup"
-                android:textAllCaps="false" />
-            <Button
-                android:layout_alignParentBottom="true"
-                android:layout_marginBottom="16dp"
-                android:layout_centerHorizontal="true"
-                android:id="@+id/btnStartAR"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Start AR View"
-                android:textAllCaps="false" />
+                android:maxLength="2"
+                android:orientation="horizontal">
+                <Button
+                    android:layout_margin="4dp"
+                    android:id="@+id/btnStartAR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Start AR View"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:layout_margin="4dp"
+                    android:id="@+id/btnZoomLayer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Zoom to Layer"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:layout_margin="4dp"
+                    android:id="@+id/btnZoomDevice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Zoom to Device"
+                    android:textAllCaps="false" />
+            </LinearLayout>
         </RelativeLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
