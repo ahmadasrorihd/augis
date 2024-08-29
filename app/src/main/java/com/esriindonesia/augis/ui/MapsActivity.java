@@ -34,6 +34,8 @@ import com.esri.arcgisruntime.mapping.popup.Popup;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.IdentifyLayerResult;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
+import com.esri.arcgisruntime.portal.Portal;
+import com.esri.arcgisruntime.portal.PortalItem;
 import com.esri.arcgisruntime.toolkit.popup.PopupViewModel;
 import com.esriindonesia.augis.BuildConfig;
 import com.esriindonesia.augis.R;
@@ -84,7 +86,7 @@ public class MapsActivity extends AppCompatActivity {
                 if (layer instanceof FeatureLayer) {
                     FeatureLayer featureLayer = (FeatureLayer) layer;
                     if (featureLayer.isVisible()
-                            && featureLayer.isPopupEnabled()) {
+                            && featureLayer.isPopupEnabled() && featureLayer.getPopupDefinition() != null) {
                         return featureLayer;
                     }
                 }
@@ -108,10 +110,17 @@ public class MapsActivity extends AppCompatActivity {
         manager = (LocationManager) getSystemService(LOCATION_SERVICE);
         binding.mapView.setMap(new ArcGISMap(BasemapStyle.ARCGIS_TOPOGRAPHIC));
         binding.mapView.getMap().getOperationalLayers().add(new FeatureLayer(
-                new ServiceFeatureTable("https://sampleserver6.arcgisonline.com/arcgis/rest/services/SF311/FeatureServer/0")
+                new ServiceFeatureTable("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/PersilScene_WFL1/FeatureServer/0")
         ));
+
+//        Portal portal = new Portal("https://tiger.maps.arcgis.com/", false);
+//        PortalItem portalItem = new PortalItem(portal, "0db5628c0c9148f682be02b421f27ad7");
+//        ArcGISMap map = new ArcGISMap(portalItem);
+//        // set up binding and UI behaviour
+//        binding.mapView.setMap(map);
+
         binding.btnZoomLayer.setOnClickListener(v -> {
-            com.esri.arcgisruntime.geometry.Point londonPoint = new com.esri.arcgisruntime.geometry.Point(binding.mapView.getMap().getOperationalLayers().get(0).getFullExtent().getYMax(), binding.mapView.getMap().getOperationalLayers().get(0).getFullExtent().getXMax(), SpatialReferences.getWgs84());
+            com.esri.arcgisruntime.geometry.Point londonPoint = new com.esri.arcgisruntime.geometry.Point(binding.mapView.getMap().getOperationalLayers().get(0).getFullExtent().getCenter().getY(), binding.mapView.getMap().getOperationalLayers().get(0).getFullExtent().getCenter().getX(), SpatialReferences.getWgs84());
             // create the viewpoint with the London point and scale
             Viewpoint viewpoint = new Viewpoint(londonPoint, SCALE);
             // set the map view's viewpoint to London with a seven second animation duration

@@ -4,10 +4,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="2">
+        <Button
+            android:id="@+id/btnSampleScene"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sample Scene"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btnSampleMap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sample Map"
+            android:textAllCaps="false" />
+    </LinearLayout>
 </LinearLayout>

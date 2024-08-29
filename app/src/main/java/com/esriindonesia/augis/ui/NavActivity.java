@@ -20,23 +20,10 @@ import java.util.List;
 
 public class NavActivity extends AppCompatActivity {
     private ActivityNavBinding binding;
-    private MenuAdapter menuAdapter;
-    private List<MenuItem> menuList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityNavBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-
-        binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-
-        menuList = new ArrayList<>();
-        menuList.add(new MenuItem("AR with device location", R.drawable.ic_edit, MapsActivity.class));
-        menuList.add(new MenuItem("AR with service location", R.drawable.ic_edit, MapsActivity.class));
-        menuList.add(new MenuItem("Popup in a map", R.drawable.ic_edit, MapsActivity.class));
-
-        menuAdapter = new MenuAdapter(this, menuList);
-        binding.recyclerView.setAdapter(menuAdapter);
     }
 }

@@ -32,6 +32,7 @@ import com.esri.arcgisruntime.layers.ArcGISSceneLayer;
 import com.esri.arcgisruntime.layers.FeatureLayer;
 import com.esri.arcgisruntime.layers.LayerContent;
 import com.esri.arcgisruntime.loadable.LoadStatus;
+import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.ArcGISScene;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
 import com.esri.arcgisruntime.mapping.GeoElement;
@@ -169,9 +170,12 @@ public class RealworldActivity extends AppCompatActivity {
     }
 
     private void setupARView() {
-        Portal portal = new Portal("https://www.arcgis.com/", false);
-        PortalItem portalItem = new PortalItem(portal, "d2d79f1af24640b084729eaba3aa41cf"); // main serice itemid
-        scene = new ArcGISScene(portalItem);
+        Portal portal = new Portal("https://tiger.maps.arcgis.com/", false);
+        PortalItem portalItem = new PortalItem(portal, "0db5628c0c9148f682be02b421f27ad7");
+        ArcGISScene sc = new ArcGISScene(portalItem);
+        // set up binding and UI behaviour
+        binding.arView.getSceneView().setScene(sc);
+
         scene.getOperationalLayers().clear();
         scene.getBaseSurface().setNavigationConstraint(NavigationConstraint.NONE);
         binding.arView.setTranslationFactor(1.0);
@@ -248,7 +252,7 @@ public class RealworldActivity extends AppCompatActivity {
     private void displayARFeature() {
         scene = new ArcGISScene(BasemapStyle.OSM_STREETS);
         scene.getOperationalLayers().add(new FeatureLayer(
-                new ServiceFeatureTable("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/CombineScene_WFL1/FeatureServer/0")
+                new ServiceFeatureTable("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/PersilMap_WFL1/FeatureServer/0")
         ));
         binding.arView.getSceneView().setScene(scene);
         scene.getBaseSurface().setNavigationConstraint(NavigationConstraint.NONE);
