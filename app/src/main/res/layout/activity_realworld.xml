@@ -61,6 +61,13 @@
                 android:layout_height="wrap_content"
                 android:text="Calibrate"
                 android:textAllCaps="false" />
+            <Button
+                android:layout_margin="8dp"
+                android:id="@+id/btnZoomToLayer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Zoom to layer"
+                android:textAllCaps="false" />
         </RelativeLayout>
         <RelativeLayout
             android:id="@+id/btnEdit"

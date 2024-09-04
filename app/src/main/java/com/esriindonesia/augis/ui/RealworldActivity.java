@@ -28,6 +28,7 @@ import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.data.Feature;
 import com.esri.arcgisruntime.data.ServiceFeatureTable;
 import com.esri.arcgisruntime.geometry.Envelope;
+import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.layers.ArcGISSceneLayer;
 import com.esri.arcgisruntime.layers.FeatureLayer;
 import com.esri.arcgisruntime.layers.LayerContent;
@@ -37,9 +38,11 @@ import com.esri.arcgisruntime.mapping.ArcGISScene;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
 import com.esri.arcgisruntime.mapping.GeoElement;
 import com.esri.arcgisruntime.mapping.NavigationConstraint;
+import com.esri.arcgisruntime.mapping.Viewpoint;
 import com.esri.arcgisruntime.mapping.view.Camera;
 import com.esri.arcgisruntime.mapping.view.DefaultSceneViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.IdentifyLayerResult;
+import com.esri.arcgisruntime.mapping.view.SceneView;
 import com.esri.arcgisruntime.portal.Portal;
 import com.esri.arcgisruntime.portal.PortalItem;
 import com.esri.arcgisruntime.toolkit.ar.ArcGISArView;
@@ -71,14 +74,18 @@ public class RealworldActivity extends AppCompatActivity {
     private float mCurrentVerticalOffset = 0f;
     private FeatureLayer featureLayer;
     private ArcGISSceneLayer sceneLayerA;
+    private ArcGISSceneLayer sceneLayerB;
+    private ArcGISSceneLayer sceneLayerC;
     private ActivityResultLauncher<Intent> startActivityForResultLauncher;
+    private static final int SCALE = 1000;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityRealworldBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        SceneView.setMemoryLimit(1573741824L);
         initView();
     }
 
@@ -170,32 +177,23 @@ public class RealworldActivity extends AppCompatActivity {
     }
 
     private void setupARView() {
-        Portal portal = new Portal("https://tiger.maps.arcgis.com/", false);
-        PortalItem portalItem = new PortalItem(portal, "0db5628c0c9148f682be02b421f27ad7");
-        ArcGISScene sc = new ArcGISScene(portalItem);
-        // set up binding and UI behaviour
-        binding.arView.getSceneView().setScene(sc);
-
-        scene.getOperationalLayers().clear();
-        scene.getBaseSurface().setNavigationConstraint(NavigationConstraint.NONE);
-        binding.arView.setTranslationFactor(1.0);
-        scene.getBaseSurface().setOpacity(0f);
-        binding.arView.getArSceneView().getPlaneRenderer().setEnabled(false);
-        binding.arView.getArSceneView().getPlaneRenderer().setVisible(false);
-
+        binding.arView.registerLifecycle(getLifecycle());
         displayARFeature();
 //        displayARScene();
     }
 
     private void displayARScene() {
-        scene = new ArcGISScene(BasemapStyle.OSM_STREETS);
-        sceneLayerA = new ArcGISSceneLayer("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/CombineScene_WSL1/SceneServer");
-        scene.getOperationalLayers().addAll(Arrays.asList(sceneLayerA));
+        Portal portal = new Portal("https://esriid.maps.arcgis.com/", false);
+        PortalItem portalItem = new PortalItem(portal, "87e4dd6f2efd4950861303b92ccb8a89");
+        scene = new ArcGISScene(portalItem);
         binding.arView.getSceneView().setScene(scene);
         scene.getBaseSurface().setNavigationConstraint(NavigationConstraint.NONE);
 
         scene.addDoneLoadingListener(() -> {
             if (scene.getLoadStatus() == LoadStatus.LOADED) {
+                sceneLayerA = (ArcGISSceneLayer) scene.getOperationalLayers().get(0);
+                sceneLayerB = (ArcGISSceneLayer) scene.getOperationalLayers().get(1);
+                sceneLayerC = (ArcGISSceneLayer) scene.getOperationalLayers().get(2);
                 Envelope envelope = sceneLayerA.getFullExtent();
                 updateCamera(envelope);
                 binding.arView.getSceneView().setOnTouchListener(new DefaultSceneViewOnTouchListener(binding.arView.getSceneView()) {
@@ -204,6 +202,8 @@ public class RealworldActivity extends AppCompatActivity {
                         binding.progressBar.setVisibility(View.VISIBLE);
                         // clear any previous selection
                         sceneLayerA.clearSelection();
+                        sceneLayerB.clearSelection();
+                        sceneLayerC.clearSelection();
                         Point screenPoint = new Point(
                                 Math.round(motionEvent.getX()),
                                 Math.round(motionEvent.getY())
@@ -250,21 +250,24 @@ public class RealworldActivity extends AppCompatActivity {
     }
 
     private void displayARFeature() {
-        scene = new ArcGISScene(BasemapStyle.OSM_STREETS);
-        scene.getOperationalLayers().add(new FeatureLayer(
-                new ServiceFeatureTable("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/PersilMap_WFL1/FeatureServer/0")
-        ));
+//        scene = new ArcGISScene(BasemapStyle.OSM_STREETS);
+//        scene.getOperationalLayers().add(new FeatureLayer(
+//                new ServiceFeatureTable("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/PersilMap_WFL1/FeatureServer/0")
+//        ));
+//        binding.arView.getSceneView().setScene(scene);
+        Portal portal = new Portal("https://tiger.maps.arcgis.com/", false);
+        PortalItem portalItem = new PortalItem(portal, "0f6076590fa0485d8a197f02b8cf4d6a");
+        scene = new ArcGISScene(portalItem);
         binding.arView.getSceneView().setScene(scene);
+
         scene.getBaseSurface().setNavigationConstraint(NavigationConstraint.NONE);
 
-        featureLayer = (FeatureLayer) scene.getOperationalLayers().get(0);
-
-        featureLayer.addDoneLoadingListener(() -> {
-            if (featureLayer.getLoadStatus() == LoadStatus.LOADED) {
+        scene.addDoneLoadingListener(() -> {
+            if (scene.getLoadStatus() == LoadStatus.LOADED) {
+                featureLayer = (FeatureLayer) scene.getOperationalLayers().get(0);
                 Envelope envelope = featureLayer.getFullExtent();
                 updateCamera(envelope);
                 binding.arView.getSceneView().setOnTouchListener(new DefaultSceneViewOnTouchListener(binding.arView.getSceneView()) {
-
                     @Override public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
                         binding.progressBar.setVisibility(View.VISIBLE);
                         featureLayer = (FeatureLayer) scene.getOperationalLayers().get(0);

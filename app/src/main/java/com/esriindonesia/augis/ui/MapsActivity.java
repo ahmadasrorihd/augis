@@ -66,18 +66,6 @@ public class MapsActivity extends AppCompatActivity {
         setKey();
         initiateVariable();
         displayMap();
-//        binding.btnStartPopup.setOnClickListener(view -> {
-//            Intent i = new Intent(this, SamplePopupActivity.class);
-//            startActivity(i);
-//        });
-//        binding.btnStartMap.setOnClickListener(view -> {
-//            Intent i = new Intent(this, SampleMapsActivity.class);
-//            startActivity(i);
-//        });
-//        binding.btnStartScene.setOnClickListener(view -> {
-//            Intent i = new Intent(this, SampleSceneActivity.class);
-//            startActivity(i);
-//        });
     }
 
     private FeatureLayer getFeatureLayer() {
@@ -108,23 +96,18 @@ public class MapsActivity extends AppCompatActivity {
 
     private void displayMap() {
         manager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        binding.mapView.setMap(new ArcGISMap(BasemapStyle.ARCGIS_TOPOGRAPHIC));
-        binding.mapView.getMap().getOperationalLayers().add(new FeatureLayer(
-                new ServiceFeatureTable("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/PersilScene_WFL1/FeatureServer/0")
-        ));
+//        binding.mapView.setMap(new ArcGISMap(BasemapStyle.ARCGIS_TOPOGRAPHIC));
+//        binding.mapView.getMap().getOperationalLayers().add(new FeatureLayer(
+//                new ServiceFeatureTable("https://services8.arcgis.com/mpSDBlkEzjS62WgX/arcgis/rest/services/persilCapitalPlace/FeatureServer/0")
+//        ));
 
-//        Portal portal = new Portal("https://tiger.maps.arcgis.com/", false);
-//        PortalItem portalItem = new PortalItem(portal, "0db5628c0c9148f682be02b421f27ad7");
-//        ArcGISMap map = new ArcGISMap(portalItem);
-//        // set up binding and UI behaviour
-//        binding.mapView.setMap(map);
-
-        binding.btnZoomLayer.setOnClickListener(v -> {
-            com.esri.arcgisruntime.geometry.Point londonPoint = new com.esri.arcgisruntime.geometry.Point(binding.mapView.getMap().getOperationalLayers().get(0).getFullExtent().getCenter().getY(), binding.mapView.getMap().getOperationalLayers().get(0).getFullExtent().getCenter().getX(), SpatialReferences.getWgs84());
-            // create the viewpoint with the London point and scale
-            Viewpoint viewpoint = new Viewpoint(londonPoint, SCALE);
-            // set the map view's viewpoint to London with a seven second animation duration
-            binding.mapView.setViewpointAsync(viewpoint, 7f);
+        Portal portal = new Portal("https://tiger.maps.arcgis.com/", false);
+        PortalItem portalItem = new PortalItem(portal, "0031a9019265463f93a8821b9941d97c");
+        ArcGISMap map = new ArcGISMap(portalItem);
+        // set up binding and UI behaviour
+        binding.mapView.setMap(map);
+        map.addDoneLoadingListener(() -> {
+            Toast.makeText(this, binding.mapView.getMap().getOperationalLayers().toString(), Toast.LENGTH_SHORT).show();
         });
 
         locationDisplay = binding.mapView.getLocationDisplay();
@@ -157,12 +140,9 @@ public class MapsActivity extends AppCompatActivity {
     }
 
     private void identifyLayer(Point screenPoint) {
-
         FeatureLayer featureLayer = getFeatureLayer();
         if (featureLayer != null) {
-            // clear the selected features from the feature layer
             resetIdentifyResult();
-
             binding.mapView.identifyLayerAsync(featureLayer, screenPoint, 12.0, true)
                     .addDoneListener(() -> {
                         try {
@@ -178,16 +158,21 @@ public class MapsActivity extends AppCompatActivity {
                                     identifiedFeatureLayer.selectFeature((Feature) popups.get(0).getGeoElement());
                                 }
                                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                            } else {
+                                binding.progressBar.setVisibility(View.GONE);
                             }
                         } catch (ExecutionException | InterruptedException e) {
                             String error = "Error identifying results " + e.getMessage();
                             Log.e(TAG, error);
                             Toast.makeText(MapsActivity.this, error, Toast.LENGTH_SHORT).show();
+                            binding.progressBar.setVisibility(View.GONE);
                         }
 
                         // set the progressBar visibility
                         binding.progressBar.setVisibility(View.GONE);
                     });
+        } else {
+            binding.progressBar.setVisibility(View.GONE);
         }
     }
 
